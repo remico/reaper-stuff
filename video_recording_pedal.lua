@@ -1,4 +1,4 @@
-package.path = debug.getinfo(1, 'S').source:match[[^@?(.*[\/])[^\/]-$]] .. './?.lua;'  .. package.path;
+package.path = debug.getinfo(1, 'S').source:match[[^@?(.*[\/])[^\/]-$]] .. './?.lua;' .. package.path;
 
 local v_rec = require("video_recording_lib")
 
@@ -8,7 +8,8 @@ STATE_INIT = 1
 STATE_READY = 2
 STATE_MAIN_LOOP_WAITING = 4
 STATE_RECORDING = 8
-STATE = STATE_INIT
+
+STATE = STATE_INIT  -- holds current state
 
 function is_state(state)
   return state & STATE == state
@@ -27,7 +28,7 @@ function loop_init()
   local is_ctrl_pressed = gfx.mouse_cap == 4
   local is_esc_pressed = char == 27
   local is_ctrl_q_pressed = char == 17
-  
+
   -- quit on "Ctrl + Esc" is pressed or GUI is closed
   if (is_ctrl_pressed and is_esc_pressed) or char == -1 then
     return 0
@@ -41,10 +42,10 @@ function loop_init()
     return 0
   end
 
-  local is_new,name,sec,cmd,rel,res,val = reaper.get_action_context()
+  local is_new,name,secID,cmdID,rel_mode,res,val = reaper.get_action_context()
   if is_new then
-    
-    if val == 0 then  
+
+    if val == 0 then
       -- quit if still not in main loop yet
       if is_state(STATE_INIT) then
         set_state(STATE_READY)
@@ -64,13 +65,13 @@ function loop_main()
   local is_ctrl_pressed = gfx.mouse_cap == 4
   local is_esc_pressed = char == 27
   local is_ctrl_q_pressed = char == 17
-  
+
   -- quit on "Ctrl + Esc" is pressed or GUI is closed
   if (is_ctrl_pressed and is_esc_pressed) or char == -1 then
     return 0
   end
 
-  -- draw technical info in the glx window
+  -- display technical info in the glx window
   gfx.x, gfx.y = 50, 50
   if is_ctrl_pressed then
     gfx.drawstr("CTRL" .. " | " .. char)
@@ -114,9 +115,9 @@ end
 
 function onexit()
   -- reaper.ShowConsoleMsg("<-----\n")
-  local is_quit_during_recording = is_state(STATE_RECORDING)
+  local being_recorded = is_state(STATE_RECORDING)
   v_rec.stop_recording()
-  if is_quit_during_recording then
+  if being_recorded then
     v_rec.insert_recorded_media_to_current_pos()
   end
 end

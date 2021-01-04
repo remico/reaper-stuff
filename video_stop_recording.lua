@@ -1,4 +1,4 @@
-package.path = debug.getinfo(1, 'S').source:match[[^@?(.*[\/])[^\/]-$]] .. './?.lua;'  .. package.path;
+package.path = debug.getinfo(1, 'S').source:match[[^@?(.*[\/])[^\/]-$]] .. './?.lua;' .. package.path;
 
 local v_rec = require("video_recording_lib")
 

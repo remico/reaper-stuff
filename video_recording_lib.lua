@@ -1,18 +1,14 @@
-local video_recording_lib = {}
-
 -- **********************************
--- User space
+-- User variables
 -- **********************************
-
 local yi_path = os.getenv("HOME") .. "/Videos/"
 local yi_video_file = yi_path .. "yi_video.mkv"
 local yi_audio_file = yi_path .. "yi_video.wav"
 local rtmp_stream = "rtmp://localhost/live"
 
 -- **********************************
--- Variables
+-- Constants
 -- **********************************
-
 local TRACK_YI_VIDEO = "YI video"
 local TRACK_YI_AUDIO = "YI audio"
 local TRACK_PIANO_MIDI = "Piano MIDI"
@@ -24,9 +20,8 @@ RECORDING_SHELL_COMMAND_START = "ffmpeg -i " .. rtmp_stream .. " -c copy -an -y 
 RECORDING_SHELL_COMMAND_STOP = "killall ffmpeg"
 
 -- **********************************
--- Service Functions
+-- Helper Functions
 -- **********************************
-
 function parse_tracks()
   for i = 0, reaper.CountTracks() - 1 do
     local mtrack = reaper.GetTrack(0, i)
@@ -81,6 +76,7 @@ end
 -- **********************************
 -- Library Methods
 -- **********************************
+local video_recording_lib = {}
 
 function video_recording_lib.sleep(n)
   os.execute("sleep " .. tonumber(n))
@@ -88,14 +84,14 @@ end
 
 function video_recording_lib.start_recording()
   os.execute(RECORDING_SHELL_COMMAND_START)
-  
+
   -- clear all selections
   reaper.SelectAllMediaItems(0, false)
   for i = 0, reaper.CountTracks() - 1 do
     local mtrack = reaper.GetTrack(0, i)
     reaper.SetTrackSelected(mtrack, false)
   end
-  
+
   reaper.CSurf_OnRecord()
 end
 
@@ -115,7 +111,7 @@ function video_recording_lib.insert_recorded_media_to_current_pos()
 
   -- insert recorded YI media
   cursor_pos = reaper.GetCursorPosition()
-  
+
   insert_media_to_track(TRACKS[TRACK_YI_AUDIO], yi_audio_file, cursor_pos)
   -- reaper.Main_OnCommand(40108, 0) -- normalize the YI audio volume
 
@@ -123,7 +119,7 @@ function video_recording_lib.insert_recorded_media_to_current_pos()
 
   -- group newly inserted YI media items (they are staying selected right after insertion)
   reaper.Main_OnCommand(40032, 0)
-  
+
   -- move edit cursor to the track start position
   video_recording_lib.reset_cursor_pos()
 end
